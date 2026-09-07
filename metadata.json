@@ -1,0 +1,7 @@
+{
+  "name": "Schedule Planner",
+  "description": "Minimalist stationery-inspired schedule planner for school, work, and personal routines with custom palettes and assignment tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

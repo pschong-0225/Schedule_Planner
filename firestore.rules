@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidPlanner(data) {
+      return data.keys().hasAll(['userId', 'stateJson', 'updatedAt']) &&
+             data.keys().size() == 3 &&
+             data.userId is string &&
+             data.userId.size() > 0 &&
+             data.userId.size() <= 128 &&
+             data.stateJson is string &&
+             data.stateJson.size() > 0 &&
+             data.stateJson.size() <= 1000000 &&
+             data.updatedAt is string &&
+             data.updatedAt.size() <= 64;
+    }
+
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    match /planners/{plannerId} {
+      allow read: if isValidId(plannerId) && (
+        (resource == null) ||
+        (isSignedIn() && resource.data.userId == request.auth.uid) ||
+        (!isSignedIn() && plannerId == 'guest_planner')
+      );
+      allow create: if isValidId(plannerId) &&
+                       isValidPlanner(request.resource.data) &&
+                       (
+                         (isSignedIn() && request.resource.data.userId == request.auth.uid && plannerId == request.auth.uid) ||
+                         (!isSignedIn() && plannerId == 'guest_planner' && request.resource.data.userId == 'guest')
+                       );
+      allow update: if isValidId(plannerId) &&
+                       isValidPlanner(request.resource.data) &&
+                       (
+                         (isSignedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid) ||
+                         (!isSignedIn() && plannerId == 'guest_planner' && request.resource.data.userId == 'guest')
+                       );
+      allow delete: if isValidId(plannerId) &&
+                       (
+                         (isSignedIn() && resource.data.userId == request.auth.uid) ||
+                         (!isSignedIn() && plannerId == 'guest_planner')
+                       );
+    }
+  }
+}

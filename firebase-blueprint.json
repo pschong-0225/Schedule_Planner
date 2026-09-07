@@ -1,0 +1,31 @@
+{
+  "entities": {
+    "Planner": {
+      "title": "Planner",
+      "description": "User schedule planner state including courses, timetable sessions, and tasks",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user identifier"
+        },
+        "stateJson": {
+          "type": "string",
+          "description": "Serialized JSON string of the complete planner state"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp when the planner state was last saved"
+        }
+      },
+      "required": ["userId", "stateJson", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/planners/{plannerId}": {
+      "schema": "Planner",
+      "description": "Stores user planner configuration, courses, assignments, and sessions"
+    }
+  }
+}
